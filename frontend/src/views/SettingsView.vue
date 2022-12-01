@@ -35,37 +35,6 @@
               </tr>
             </tbody>
           </table>
-          <h3 class="text-warning mt-5">Experimental funtion</h3>
-          <h4>News auto collector</h4>
-          <p>Need to run command: <code>symfony console messenger:consume</code></p>
-          <table>
-            <tbody>
-              <tr class="settings-post__tr">
-                <td class="settings-post__td">
-                  Data from news collector update every N - seconds:
-                </td>
-                <td>
-                  <input
-                    :value="settingsPost.newsCollectorTimeout"
-                    class="settings-post__input settings-post__input--number"
-                    type="number"
-                    @focusout="changeSettingsPost('newsCollectorTimeout', +$event.target.value)"
-                  />
-                </td>
-                <td>
-                </td>
-              </tr>
-              <tr class="settings-post__tr">
-                <td class="settings-post__td">
-                  News Collector:
-                </td>
-                <td>
-                  <BtnNewsCollectorRemote class="settings-post__btn" />
-                </td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -75,7 +44,6 @@
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";
-import BtnNewsCollectorRemote from "@/components/BtnNewsCollectorRemote.vue";
 
 const store = useStore();
 

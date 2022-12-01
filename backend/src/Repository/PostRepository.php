@@ -42,14 +42,33 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
-    public function findAllSortedDateAndRatingAndPaginator(int $page, int $limit): Paginator
+    public function findAllSortedByLastId(int $lastPk, int $limit)
     {
         $query = $this->_em
-            ->createQuery('SELECT p FROM ' . Post::class . ' p ORDER BY p.created_at DESC')
-            ->setFirstResult(($page - 1) * $limit)
+            ->createQuery('SELECT p FROM ' . Post::class . ' p WHERE p.id > :lastPk ORDER BY p.id ASC')
+            ->setParameter('lastPk', $lastPk)
             ->setMaxResults($limit);
 
-        return new Paginator($query, false);
+        return $query->getResult();
+    }
+
+    public function findAllSortedByFirstId(int $firstPk, int $limit)
+    {
+        $query = $this->_em
+            ->createQuery('SELECT p FROM ' . Post::class . ' p WHERE p.id < :firstPk ORDER BY p.id DESC')
+            ->setParameter('firstPk', $firstPk)
+            ->setMaxResults($limit);
+
+        return $query->getResult();
+    }
+
+    public function findAllSortedByIdDesc(int $limit)
+    {
+        $query = $this->_em
+            ->createQuery('SELECT p FROM ' . Post::class . ' p ORDER BY p.id DESC')
+            ->setMaxResults($limit);
+
+        return $query->getResult();
     }
 
     /**

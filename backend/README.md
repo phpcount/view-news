@@ -34,7 +34,7 @@ symfony console make:migration
 
 symfony console doctrine:migrations:migrate
 
-symfony composer req doctrine-messenger
+symfony composer req doctrine-messenger [removed]
 
 symfony composer require symfony/monolog-bundle
 

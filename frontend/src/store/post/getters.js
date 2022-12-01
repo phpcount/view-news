@@ -1,7 +1,23 @@
 export default {
-  isFullDataLoaded: (state) => 'self' in state.linksItems && state.linksItems.self === state.linksItems.last,
+  firstPk: (state) => {
+    const length = state.items.length
+    if (0 === length) {
+      return null
+    }
 
-  nextPage: (state) => state.linksItems.next,
+    return Math.min(...state.items.map(p => p.pk))
+  },
+
+  lastPk: (state) => {
+    const length = state.items.length
+    if (0 === length) {
+      return null
+    }
+
+    return Math.max(...state.items.map(p => p.pk))
+  },
+
+  isFullDataScroll: (state) => state.isFullDataScroll,
 
   classAnimationStatusChangeRating: (state) => (postId) => {
     return {

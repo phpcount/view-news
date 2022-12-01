@@ -5,20 +5,19 @@ function getSettings() {
     ? JSON.parse(window.localStorage.getItem(STORAGE_SETTINGS_KEY))
     : {
       limit: 3,
-      newsCollectorTimeout: 10,
       longPollingTimeout: 3,
     }
 }
 
 export default {
   items: [],
-  linksItems: {},
   item: {},
+  isFullDataScroll: false,
   statusChangeRating: {
     id: null,
     status: 'no-touched',
   },
   statusRatingItems: {},
   settings: getSettings(),
-  longPollingState: true,
+  longPollingState: false,
 }

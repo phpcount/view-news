@@ -18,6 +18,8 @@ class PostListItem
 
     private string $id;
 
+    private int $pk;
+
     public function getTitle(): string
     {
         return $this->title;
@@ -74,6 +76,18 @@ class PostListItem
     public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getPk(): int
+    {
+        return $this->pk;
+    }
+
+    public function setPk(int $pk): self
+    {
+        $this->pk = $pk;
 
         return $this;
     }

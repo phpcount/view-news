@@ -15,7 +15,7 @@ const store = createStore({
 
 addResponseHandler(
   (response) => {
-    if (null === response.data) {
+    if (!response.data) {
       response.data = { success: true }
     }
 

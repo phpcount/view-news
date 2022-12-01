@@ -1,12 +1,15 @@
 import http from '@/api/http';
 
-export async function all(page = null, limit = null) {
+export async function all({firstPk = null, lastPk = null, limit = null}) {
   const params = {}
+  if (firstPk) {
+    params['first_pk'] = firstPk
+  }
+  if (lastPk) {
+    params['last_pk'] = lastPk
+  }
   if (limit) {
     params['limit'] = limit
-  }
-  if (page) {
-    params['page'] = page
   }
 
   let { data } = await http.get('/post', {
