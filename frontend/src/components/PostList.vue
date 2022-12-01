@@ -1,18 +1,17 @@
 <template>
   <div class="container" @mousewheel.stop="loadPostsIfNotEnough">
-    <PostListItem
-      v-for="post of posts"
-      :key="post.id"
-      :post="post"
-    />
+    <PostListItem v-for="post of posts" :key="post.id" :post="post" />
     <div v-if="loadWithBtn" class="mt-5">
       <p>Waiting for news...</p>
-      <AppSpinner/>
-      <div v-if="(countPosts < 3)" class="mt-2">
+      <AppSpinner />
+      <div v-if="countPosts > 0" class="mt-2">
         <button
-        type="button"
-        class="btn btn-secondary"
-        @click="loadPostsIfNotEnough">Load more...</button>
+          type="button"
+          class="btn btn-secondary"
+          @click="loadPostsIfNotEnough"
+        >
+        Scroll down or press
+        </button>
       </div>
     </div>
   </div>
@@ -32,39 +31,39 @@ const store = useStore();
 const posts = computed(() => store.state.post.items);
 const countPosts = computed(() => posts.value.length);
 
-const loadPostsLongPolling = () => store.dispatch("post/longPollingRetriev")
-const loadPosts = () => store.dispatch("post/load")
-const longPollingOff = () => store.dispatch("post/longPollingOff")
+const loadPostsLongPolling = () => store.dispatch("post/longPollingRetriev");
+const loadPosts = () => store.dispatch("post/load");
+const longPollingOff = () => store.dispatch("post/longPollingOff");
 const loadByScroll = () => {
-  isReachedBottomScroll().then(loadPosts);
+  isReachedBottomScroll().then(() => {
+    longPollingOff()
+    loadPosts();
+  });
 };
 const loadPostsIfNotEnough = () => {
   if (countPosts.value < 3) {
-    loadPosts()
+    loadPosts();
   }
-}
+};
 
-const isFullDataLoaded = computed(() => store.getters['post/isFullDataLoaded'])
-const loadWithBtn = computed(() => !hasScroll() && !isFullDataLoaded.value)
+const isFullDataLoaded = computed(() => store.getters["post/isFullDataLoaded"]);
+const loadWithBtn = computed(() => !hasScroll() && !isFullDataLoaded.value);
 
 const nextLoadListener = throttle(loadByScroll, throttleDelay);
 
 onMounted(() => {
-  loadPostsLongPolling()
+  loadPostsLongPolling();
   window.addEventListener("scroll", nextLoadListener);
 });
 
 onUnmounted(() => {
-  longPollingOff()
+  longPollingOff();
   window.removeEventListener("scroll", nextLoadListener);
 });
-
 </script>
 
 <style scoped>
-
 .container {
   margin: auto 0;
 }
-
 </style>

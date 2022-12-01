@@ -7,13 +7,16 @@ export default {
       return;
     }
 
-    await dispatch('load')
+    dispatch('load')
     if (0 === state.items.length) {
       await new Promise(resolve => setTimeout(resolve, (1000 * getters.settings.longPollingTimeout)))
-      dispatch('longPollingRetriev')
-    } else {
-      dispatch('longPollingOff')
+      if (0 === state.items.length) {
+        dispatch('longPollingRetriev')
+        return
+      }
     }
+
+    dispatch('longPollingOff')
   },
   async load({ getters, commit }, limit = null) {
     if (getters.isFullDataLoaded) {
