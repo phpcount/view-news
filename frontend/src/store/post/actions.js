@@ -1,32 +1,37 @@
 import * as api from '../../api/post'
-import * as apiNewsCollector from '../../api/news-collector'
 
 export default {
-  async longPollingRetriev({ state, getters, dispatch }) {
-    if (false === state.longPollingState) {
+  async loadLongPolling({ state, getters, commit, dispatch }) {
+    if (false === state.longPollingState ) return;
+    await new Promise(resolve => setTimeout(resolve, (1000 * getters.settings.longPollingTimeout)))
+    if (false === state.longPollingState ) return;
+
+    const { success, data } = await api.all({ lastPk: getters.lastPk, limit: getters.settings.limit })
+    if (success) {
+      commit('unshiftItems', data.items)
+    }
+
+    dispatch('loadLongPolling')
+  },
+  async loadByScroll({ getters, commit }, limit = null) {
+    if (getters.isFullDataScroll) {
       return;
     }
 
-    dispatch('load')
-    if (0 === state.items.length) {
-      await new Promise(resolve => setTimeout(resolve, (1000 * getters.settings.longPollingTimeout)))
-      if (0 === state.items.length) {
-        dispatch('longPollingRetriev')
-        return
-      }
-    }
+    const firstPk = getters.firstPk
 
-    dispatch('longPollingOff')
+    const { success, data } = await api.all({ firstPk, limit: limit || getters.settings.limit })
+    if (success) {
+      if (0 === data.items.length) {
+        commit('fulledDataScroll')
+      }
+      commit('pushItems', data.items)
+    }
   },
   async load({ getters, commit }, limit = null) {
-    if (getters.isFullDataLoaded) {
-      return;
-    }
-
-    const { success, data, links } = await api.all(getters.nextPage, limit || getters.settings.limit)
+    const { success, data } = await api.all({limit: limit || getters.settings.limit})
     if (success) {
-      commit('addItems', data.items)
-      commit('setLinksItems', links)
+      commit('pushItems', data.items)
     }
   },
   async getById({ commit }, id) {
@@ -37,6 +42,7 @@ export default {
     }
   },
   reload({ getters, dispatch, commit }) {
+    dispatch('longPollingOff')
     commit('clearItems');
     dispatch('load', getters.settings.limit)
   },
@@ -55,15 +61,10 @@ export default {
   },
 
   async changeSettings({ commit }, { key, value }) {
-    if (key === 'newsCollectorTimeout') {
-      const { success } = await apiNewsCollector.changeDelay(value)
-      if (success) {
-        commit('updateSettings', { key, value })
-        return
-      }
-    }
-
     commit('updateSettings', { key, value });
+  },
+  longPollingOn({ commit },) {
+    commit('setLongPollingState', true)
   },
   longPollingOff({ commit }) {
     commit('setLongPollingState', false)

@@ -19,13 +19,19 @@ class PostController extends AbstractController
     #[Route('', methods: ['GET'], name: 'all')]
     public function all(int $limit, Request $request): JsonResponse
     {
-        $page = $request->query->getInt('page', 1);
+        $firstPk = $request->query->getInt('first_pk', 0);
+        $lastPk = $request->query->getInt('last_pk', 0);
         $limit = $request->query->getInt('limit', $limit);
 
-        // fix: a need domain from config
-        $link = $this->generateUrl('app_post_all');
+        if ($firstPk !== 0) {
+            return $this->json($this->postService->allByScroll($firstPk, $limit));
+        }
 
-        return $this->json($this->postService->all($link, $page, $limit));
+        if ($lastPk !== 0) {
+            return $this->json($this->postService->allByLongPolling($lastPk, $limit));
+        }
+
+        return $this->json($this->postService->all($limit));
     }
 
     #[Route('/{id}', methods: ['GET'], name: 'get')]

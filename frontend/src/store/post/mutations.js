@@ -1,8 +1,9 @@
-import { getPageNumber } from "@/lib/helpers"
-
 export default {
-  addItems(state, data) {
+  pushItems(state, data) {
     state.items.push(...data)
+  },
+  unshiftItems(state, data) {
+    state.items.unshift(...data)
   },
   setItem(state, data) {
     state.item = data
@@ -10,16 +11,10 @@ export default {
   clearItems(state) {
     state.items = []
     state.item = {}
-    state.linksItems = {}
     state.statusRatingItems = {}
   },
-  setLinksItems(state, links) {
-    const { self, next, last } = links
-    state.linksItems = {
-      self: getPageNumber(self),
-      next: getPageNumber(next),
-      last: getPageNumber(last),
-    }
+  fulledDataScroll(state) {
+    state.isFullDataScroll = true
   },
   updatePostRating(state, {postId, rating, timeoutLeave = 800}) {
     const post = state.items.find(item => item.id === postId)

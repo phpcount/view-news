@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\DTO\Response\{Links, PostItemResponse, PostListItem, PostListResponse, SuccessLinksResponse, SuccessRespone};
+use App\DTO\Response\{PostItemResponse, PostListItem, PostListResponse, SuccessRespone};
 use App\Entity\Post;
 use App\Repository\PostRepository;
 
@@ -12,22 +12,34 @@ class PostService
     {
     }
 
-    public function all(string $link, int $page, int $limit): SuccessLinksResponse
+    public function all(int $limit): SuccessRespone
     {
-        if ($page < 1) {
-            $page = 1;
-        }
+        $posts = $this->postRepository->findAllSortedByIdDesc($limit);
 
-        $paginator = $this->postRepository->findAllSortedDateAndRatingAndPaginator($page, $limit);
-        $totalElements = count($paginator);
+        return $this->allMapResult($posts);
+    }
 
-        $posts = [];
-        foreach ($paginator as $_page) {
-            $posts[] = $_page;
-        }
+    public function allByLongPolling(int $lastPk, int $limit): SuccessRespone
+    {
+        $posts = $this->postRepository->findAllSortedByLastId($lastPk, $limit);
 
+        $posts = array_reverse($posts);
+
+        return $this->allMapResult($posts);
+    }
+
+    public function allByScroll(int $firstPk, int $limit): SuccessRespone
+    {
+        $posts = $this->postRepository->findAllSortedByFirstId($firstPk, $limit);
+
+        return $this->allMapResult($posts);
+    }
+
+    private function allMapResult(array $posts): SuccessRespone
+    {
         $posts = array_map(function (Post $post) {
             return (new PostListItem())
+                ->setPk($post->getId())
                 ->setId($post->getOriginalId())
                 ->setTitle($post->getTitle())
                 ->setCreatedAt($post->getCreatedAt())
@@ -35,13 +47,9 @@ class PostService
                 ->setRating($post->getRating());
         }, $posts);
 
-        return new SuccessLinksResponse(new PostListResponse($posts), new Links(
-            $link,
-            $limit,
-            $page,
-            $totalElements
-        ));
+        return new SuccessRespone(new PostListResponse($posts));
     }
+
 
     public function get(string $originalId): SuccessRespone
     {

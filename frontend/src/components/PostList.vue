@@ -1,16 +1,12 @@
 <template>
-  <div class="container" @mousewheel.stop="loadPostsIfNotEnough">
+  <div class="container" @wheel.stop="loadPostsIfNotEnough">
     <PostListItem v-for="post of posts" :key="post.id" :post="post" />
-    <div v-if="loadWithBtn" class="mt-5">
+    <div v-if="showSpinner" class="mt-5">
       <p>Waiting for news...</p>
       <AppSpinner />
       <div v-if="countPosts > 0" class="mt-2">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="loadPostsIfNotEnough"
-        >
-        Scroll down or press
+        <button type="button" class="btn btn-secondary" @click="loadByScroll">
+          Scroll down or press
         </button>
       </div>
     </div>
@@ -30,29 +26,33 @@ const store = useStore();
 
 const posts = computed(() => store.state.post.items);
 const countPosts = computed(() => posts.value.length);
+const isFullDataScroll = computed(() => store.getters["post/isFullDataScroll"]);
+const showSpinner = computed(() => !hasScroll() && !isFullDataScroll.value);
 
-const loadPostsLongPolling = () => store.dispatch("post/longPollingRetriev");
-const loadPosts = () => store.dispatch("post/load");
-const longPollingOff = () => store.dispatch("post/longPollingOff");
-const loadByScroll = () => {
-  isReachedBottomScroll().then(() => {
-    longPollingOff()
-    loadPosts();
+const longPollingOff = () => store.dispatch("post/longPollingOff")
+const longPollingOn = () => store.dispatch("post/longPollingOn")
+const loadByScroll = () => store.dispatch("post/loadByScroll")
+
+const loadPostsIfNotEnough = throttle((event) => {
+  if (showSpinner.value && countPosts.value < 3 && event.deltaY > 0) {
+    loadByScroll();
+  }
+}, 300);
+
+const loadWithScroll = () => {
+  isReachedBottomScroll().then(async () => {
+    longPollingOff();
+    await loadByScroll();
+    longPollingOn();
   });
 };
-const loadPostsIfNotEnough = () => {
-  if (countPosts.value < 3) {
-    loadPosts();
-  }
-};
 
-const isFullDataLoaded = computed(() => store.getters["post/isFullDataLoaded"]);
-const loadWithBtn = computed(() => !hasScroll() && !isFullDataLoaded.value);
-
-const nextLoadListener = throttle(loadByScroll, throttleDelay);
+const nextLoadListener = throttle(loadWithScroll, throttleDelay);
 
 onMounted(() => {
-  loadPostsLongPolling();
+  if (0 === posts.value.length) {
+    store.dispatch("post/load");
+  }
   window.addEventListener("scroll", nextLoadListener);
 });
 

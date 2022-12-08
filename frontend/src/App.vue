@@ -1,12 +1,14 @@
 <template>
   <div>
-    <ErrorAlert/>
+    <ErrorAlert />
     <BtnScrollUp />
     <div class="nav-container">
       <h2>News</h2>
       <nav class="nav ms-3">
         <router-link class="nav__link" :to="{ name: 'home' }">Home</router-link>
-        <router-link class="nav__link" :to="{ name: 'settings' }">Settings</router-link>
+        <router-link class="nav__link" :to="{ name: 'settings' }"
+          >Settings</router-link
+        >
       </nav>
     </div>
     <section class="section">
@@ -24,17 +26,22 @@
 <script setup>
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-import BtnScrollUp from '@/components/ui/BtnScrollUp.vue'
-import ErrorAlert from './components/ErrorAlert.vue';
+import BtnScrollUp from "@/components/ui/BtnScrollUp.vue";
+import ErrorAlert from "./components/ErrorAlert.vue";
 
-const store = useStore()
-const router = useRouter()
+const store = useStore();
+const router = useRouter();
 
 router.afterEach((to, from) => {
-  if (from.name === 'settings' && to.name === 'home') {
-    store.dispatch('post/reload')
+  if (to.name === "home") {
+    if (from.name === "settings") {
+      store.dispatch("post/reload");
+    }
+
+    store.dispatch("post/longPollingOn");
+    store.dispatch("post/loadLongPolling");
   }
-})
+});
 </script>
 
 <style>
@@ -104,7 +111,6 @@ router.afterEach((to, from) => {
     transform: rotateY(90deg);
   }
 }
-
 
 .post.post-rating-positive--border {
   border-color: #00ff00 !important;

@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Entity\Post;
 use App\Repository\PostRepository;
 use App\Utils\NewsParser\DTO\PostListDTO;
-use App\Utils\NewsParser\NewsCollectorFactory;
 
 use Psr\Log\LoggerInterface;
 
@@ -19,35 +18,22 @@ class NewsCollectorService
     ) {
     }
 
-    public function mine(int $divisor = 3): void
-    {
-        $newsLimit = $this->newsLimit; // 5;
-
-        $quotient = intval($newsLimit / $divisor);
-        $remainder = $newsLimit % $divisor;
-        $chunks = array_fill(0, $quotient, $divisor);
-        if ($remainder) {
-            array_push($chunks, $remainder);
-        }
-
-        $this->logger->debug('chunks', [$chunks]);
-
-        foreach ($chunks as $count) {
-            $this->logger->debug('count', [$count]);
-            $newsCollector = NewsCollectorFactory::makeNews(NewsCollectorFactory::SOURCE_RBC, [$count]);
-            $newsCollector->process();
-            $newsCollector->filtredPostList($this->filterPostListService);
-            $newsCollector->handlePostItems();
-
-            $newsListDTO = $newsCollector->getData();
-
-            $this->save($newsListDTO);
-        }
-    }
-
     public function save(PostListDTO $newsList): void
     {
-        foreach ($newsList->getItems() as $newsItem) {
+        $newsItems = $newsList->getItems();
+
+        usort($newsItems, function($a, $b) {
+            $aDt = $a->getCreatedAt();
+            $bDt = $b->getCreatedAt();
+
+            if ($aDt == $bDt) {
+                return 0;
+            }
+
+            return $aDt < $bDt ? -1 : 1;
+        });
+
+        foreach ($newsItems as $newsItem) {
             $post = new Post();
             $post
                 ->setOriginalId($newsItem->getOriginalId())
