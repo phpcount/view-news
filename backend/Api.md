@@ -7,11 +7,6 @@ success response: 200
 
 ```
 {
-    "links": {
-        "self": "/api/v1/post/?page=2",
-        "next": "/api/v1/post/?page=3",
-        "last": "/api/v1/post/?page=7"
-    },
     "success": true,
     "data": {
         "items": [
@@ -20,14 +15,16 @@ success response: 200
                 "content": "string...",
                 "createdAt": "2022-11-29T21:07:04+07:00",
                 "rating": 10,
-                "id": "string"
+                "id": "string",
+                "pk": integer
             },
             {
                 "title": "string",
                 "content": "string...",
                 "createdAt": "2022-11-29T21:06:57+07:00",
                 "rating": 7,
-                "id": "string"
+                "id": "string",
+                "pk": integer
             }
         ]
     }
